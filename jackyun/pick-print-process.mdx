@@ -1,0 +1,171 @@
+# Jackyun Pick and Print Process
+
+**[简体中文版](./pick-print-process-zh)**
+
+---
+
+## POD Orders (Print Required)
+
+Orders containing print-on-demand items flow through BatchStation and PrintStation.
+
+
+
+```mermaid
+sequenceDiagram
+    participant PSJKY as PopSockets JKY
+    participant Camel
+    participant BS as BatchStation
+    participant PS as PrintStation
+    participant FFC as KH FFC Team
+
+    PSJKY->>PSJKY: Order received (inventory checked)
+    Camel->>PSJKY: Request confirmed POD orders
+    PSJKY-->>Camel: Return order data
+    Camel->>BS: Push orders to BatchStation
+
+    FFC->>BS: Create Batch
+    Note over BS: Item locations from<br/>manual CSV upload (Phase 1)
+    BS->>BS: Propose number of Carts
+    FFC->>BS: Assign Cart IDs
+
+    rect rgb(240, 248, 255)
+        Note over FFC,BS: Non-Printable Items
+        FFC->>BS: Use pick screen
+        FFC->>FFC: Pick items to Rack
+    end
+
+    rect rgb(255, 250, 240)
+        Note over BS,FFC: Printable Items
+        BS->>PS: Send batch for sub-batching
+        PS->>PS: Create sub-batches by category
+        PS->>PS: Calculate tray layout
+        FFC->>PS: Enter Tray IDs
+        FFC->>FFC: Pick items to Trays
+        FFC->>PS: Transport to Print Room
+        FFC->>PS: Enter Tray ID
+        PS-->>FFC: Show loading layout
+        FFC->>FFC: Load Jig, Print, Unload
+        FFC->>FFC: Return items to Cart
+    end
+
+    FFC->>FFC: Hand Cart to Shipping
+    FFC->>BS: Select Cart/Tray in UI
+    BS-->>FFC: Show Order ID + item images
+    FFC->>FFC: QC, Pack, Label, Ship
+```
+
+
+
+---
+
+## Item Location Integration
+
+### Phase 1: Manual SKU-Location Mapping (Current)
+
+Temporary solution for consumable inventory item locations:
+
+```mermaid
+sequenceDiagram
+    participant KHJKY as KH JKY
+    participant FFC as KH FFC Team
+    participant BS as BatchStation
+
+    FFC->>KHJKY: Export SKU → Location mappings
+    KHJKY-->>FFC: CSV/Excel file
+    FFC->>BS: Upload location mappings
+    Note over BS: BatchStation uses mappings<br/>for pick screen locations
+```
+
+### Phase 2: Automated Location Sync (Future)
+
+Replaces the manual CSV upload. Camel will pull item locations directly from KH Jackyun for each consumable inventory item and push to BatchStation:
+
+```mermaid
+sequenceDiagram
+    participant Camel
+    participant KHJKY as KH JKY
+    participant BS as BatchStation
+
+    Camel->>KHJKY: Request item locations
+    KHJKY-->>Camel: Return SKU → Location data
+    Camel->>BS: Push location mappings
+    Note over BS: Real-time location data<br/>for pick screens
+```
+
+---
+
+## 1. Order Intake & Routing
+
+1. Orders come into Jackyun (inventory assumed checked)
+2. **Decision Point:** Order type routing
+   - **2.1** FG Only orders → Direct Ship
+   - **2.2** Orders include POD → Continue to batching
+
+---
+
+## 2. Batch Creation
+
+3. Camel pulls inventory-confirmed orders and hands over to BatchStation
+4. Tech creates the Batch
+5. BatchStation pulls all item details from KH Jackyun
+6. BatchStation proposes number of Carts based on order count (wall carts near Assembly)
+7. Staff selects Carts and enters Cart IDs to the Batch
+
+---
+
+## 3. Non-Printable Item Picking
+
+8. Collector Staff uses Non-Printable Item pick screen to locate items, collect into Trays in transport Cart, bring to Rack
+9. QC Person reviews pick screen for non-print items (packaging, rings, etc.) and drops into marked location on rack
+
+---
+
+## 4. Printable Item Preparation
+
+10. PrintStation creates sub-batches according to item category
+11. Each sub-batch arranged with same items grouped together on loading layout
+12. PrintStation calculates all trays for each type, asks to enter Tray IDs
+13. Picking staff picks printable items into transport cart, brings to table with Trays
+14. Sorting/QC staff enters Tray ID (or scans QR), uses loading layout to find slots and tray numbers, loads slots on plastic tray
+15. Trays transported to Printing Room
+
+---
+
+## 5. Printing
+
+16. Print Tech enters Tray ID in PrintStation → shows loading layout
+17. Print Tech prints items after loading Jig with items from Tray
+18. Printed items unloaded back to tray, handed back to Sorting staff
+
+---
+
+## 6. Post-Print Sorting
+
+19. Sorting/QC Staff refers to Unloading layout, puts printed items back to Cart
+20. All printed and non-printed items picked for batch → finished carts handed to Shipping
+
+---
+
+## 7. Assembly & Shipping
+
+21. Assembly/Shipping staff gets Cart, selects Cart in UI, selects specific tray
+22. Tray shows ORDER ID and items list with images of printed items → staff compares with Jackyun order items and QC
+23. Packed items from Tray → shipping labels printed → shipped out
+
+---
+
+## Open Questions
+
+- **FG-Only Orders:** How are we handling these? Will they follow the regular KH process or go through BatchStation?
+
+---
+
+## Systems Involved
+
+| System | Role |
+|--------|------|
+| Jackyun | Order source, inventory |
+| Camel | Pulls confirmed orders, hands to BatchStation |
+| BatchStation | Batch creation, cart assignment, item details |
+| PrintStation | Sub-batch creation, tray management, print jobs |
+| KH Jackyun | Fulfillment center operations |
