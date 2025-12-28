@@ -236,14 +236,15 @@ Consume raw Jackyun orders from `jackyun-orders-bs` subscription, transform to B
 
 
 ```mermaid
-flowchart LR
+flowchart TB
+    E[jackyun-orders-topic] -->|jackyun-orders-bs| A
+
     subgraph PRC["cm-jackyun-prc"]
         A[Subscription Consumer] --> B[Transform to BatchStation format]
         B --> C[Base64 encode payload]
         C --> D[Publish to Topic]
     end
 
-    E[jackyun-orders-topic] -->|jackyun-orders-bs| A
     D --> F[order-update-topic]
     F -->|order-update-bs| G[BatchStation]
 ```
