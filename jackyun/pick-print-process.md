@@ -1,9 +1,3 @@
----
-title: "Pick and Print Process"
-description: "End-to-end pick and print workflow for KH fulfillment"
-mode: "wide"
----
-
 # Jackyun Pick and Print Process
 
 **[简体中文版](./pick-print-process-zh)**

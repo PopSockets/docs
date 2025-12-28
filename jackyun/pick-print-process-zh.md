@@ -1,9 +1,3 @@
----
-title: "拣货和打印流程"
-description: "KH 履约端到端拣货和打印流程"
-mode: "wide"
----
-
 # Jackyun 拣货和打印流程
 
 **[English Version](./pick-print-process)**

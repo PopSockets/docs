@@ -1,9 +1,3 @@
----
-title: "Camel Integrations"
-description: "Technical integration spec for Jackyun → BatchStation order flow"
-mode: "wide"
----
-
 # Jackyun Pick Flow - Camel Integrations
 
 This document outlines the required Camel integrations for the Jackyun pick and print process.
